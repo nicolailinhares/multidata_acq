@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MultiData_Acq.Util
@@ -18,32 +19,40 @@ namespace MultiData_Acq.Util
         public PlotHandler(List<PlotModel> ms){
             models = ms;
             qChans = models.Count;
+            FileLock = new object();
         }
         public override void Handling(ushort[] data, MccBoard Board)
         {
-            float engUnits;
-            
-            for (int i = 0; i < data.Length; i+=qChans)
+            lock (FileLock)
             {
-                for (int j = 0; j < qChans; j++)
+                if (reading)
+                    Monitor.Wait(FileLock);
+                float engUnits;
+                reading = true;
+                for (int i = 0; i < data.Length; i += qChans)
                 {
-                    Board.ToEngUnits(Range.Bip10Volts, data[i+j], out engUnits);
-                    var lineSeries = models[j].Series[0] as LineSeries;
-                    if (lineSeries != null)
+                    for (int j = 0; j < qChans; j++)
                     {
-                        lineSeries.Points.Add(new DataPoint(count , engUnits));
+                        Board.ToEngUnits(Range.Bip10Volts, data[i + j], out engUnits);
+                        var lineSeries = models[j].Series[0] as LineSeries;
+                        if (lineSeries != null)
+                        {
+                            lineSeries.Points.Add(new DataPoint(count, engUnits));
+                        }
+                        count++;
                     }
-                    count++;
-                }             
+                }
+                foreach (PlotModel model in models)
+                {
+                    var lineSeries = model.Series[0] as LineSeries;
+                    if (lineSeries != null && count >= MAX)
+                        lineSeries.Points.Clear();
+                    model.RefreshPlot(true);
+                }
+                if (count >= MAX) count = 0;
+                reading = false;
+                Monitor.Pulse(FileLock);
             }
-            foreach (PlotModel model in models)
-            {
-                var lineSeries = model.Series[0] as LineSeries;
-                if (lineSeries != null && count >= MAX)
-                    lineSeries.Points.Clear();
-                model.RefreshPlot(true); 
-            }
-            if (count  >= MAX) count = 0;
         }
 
     }

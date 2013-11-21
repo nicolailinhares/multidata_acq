@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Threading;
 using OxyPlot;
 using OxyPlot.Series;
+using System.ComponentModel;
 namespace MultiData_Acq.Util
 {
     public delegate void ScannedEventHandler(object sender, DataEventArgs e);
@@ -60,30 +61,26 @@ namespace MultiData_Acq.Util
                 Scanned(this, e);
         }
 
-        public void SplitData(object sender, EventArgs e)
+        public void SplitData(object sender, DoWorkEventArgs e)
         {
             lock (thisLock)
             {
-                short status;
-                int curCount, curIndex;
-                ULStat = Board.GetStatus(out status, out curCount, out curIndex, FunctionType.AiFunction);
-                ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
                 ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans*NumPoints);
-                ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);    
+                DataEventArgs args = new DataEventArgs();
+                args.Data = adData;
+                args.Board = Board;
+                OnScanned(args);
             }
-            DataEventArgs args = new DataEventArgs();
-            args.Data = adData;
-            args.Board = Board;
-            OnScanned(args);
-            DispatcherTimer d = (DispatcherTimer)sender;
-            d.Stop();
+            
         }
 
         public void CreateBackground(int BoardNum, EventType EventType, int EventData, IntPtr pUserData)
         {
-            DispatcherTimer task = new DispatcherTimer();
-            task.Tick += SplitData;
-            task.Start();
+            ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
+            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);    
+            BackgroundWorker task = new BackgroundWorker();
+            task.DoWork += SplitData;
+            task.RunWorkerAsync();
         }
     }
 }

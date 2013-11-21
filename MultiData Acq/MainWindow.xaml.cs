@@ -15,6 +15,7 @@ using System.Windows.Shapes;
 using MccDaq;
 using MultiData_Acq.Util;
 using System.Threading;
+using System.ComponentModel;
 
 namespace MultiData_Acq
 {
@@ -95,7 +96,7 @@ namespace MultiData_Acq
             DataHandler dataCont = (DataHandler)sender;
             dataCont.Stop();
             started = false;
-            controlBt.Content = "Start";
+            //controlBt.Content = "Start";
         }
 
         private void MenuDetect_Click(object sender, RoutedEventArgs e)

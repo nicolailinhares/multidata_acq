@@ -2,6 +2,7 @@
 using OxyPlot;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,6 +32,7 @@ namespace MultiData_Acq.Util
             maxPontos = ci.Duration * boardConfig.Rate * boardConfig.QChanns;
             fileHand = new FileHandler(boardConfig.QChanns, boardConfig.BoardName, boardConfig.Rate, ci.PatientName);
             plotHand = new PlotHandler(models);
+            fileHand.Finished += EndEnsure;
             Processing += fileHand.CreateBackground;
             Processing += plotHand.CreateBackground;
             dataCont.Scanned += DispatchData;
@@ -59,6 +61,11 @@ namespace MultiData_Acq.Util
         {
             Processing.Invoke(e);
             pontos += e.Data.Length;
+            
+        }
+
+        public void EndEnsure(object sender, RunWorkerCompletedEventArgs e)
+        {
             if (maxPontos > 0 && pontos >= maxPontos)
                 OnFinished(EventArgs.Empty);
         }
