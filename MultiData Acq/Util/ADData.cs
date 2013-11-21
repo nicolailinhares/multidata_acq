@@ -33,7 +33,7 @@ namespace MultiData_Acq.Util
             lowChannel = bc.LowChannel;
             qChans = bc.QChanns;
             NumPoints = bc.PointsRead;
-            MemHandle = MccDaq.MccService.WinBufAllocEx(qChans*NumPoints);
+            MemHandle = MccDaq.MccService.WinBufAllocEx(10*qChans*NumPoints);
             Board = board;
             rate = bc.Rate;
             adData = new ushort[qChans*NumPoints];
@@ -43,7 +43,7 @@ namespace MultiData_Acq.Util
         public void Start()
         {
             ULStat = Board.EnableEvent(EventType.OnEndOfAiScan, EventParameter.Default, mCb, MemHandle);
-            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
+            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans*NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
         }
 
         public void Stop()
@@ -64,6 +64,9 @@ namespace MultiData_Acq.Util
         {
             lock (thisLock)
             {
+                short status;
+                int curCount, curIndex;
+                ULStat = Board.GetStatus(out status, out curCount, out curIndex, FunctionType.AiFunction);
                 ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
                 ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans*NumPoints);
                 ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);    
