@@ -30,16 +30,17 @@ namespace MultiData_Acq
             set { boardProperties = value; }
         }
         
-        public BoardConfig(BoardConfiguration bc, int n)
+        public BoardConfig(BoardConfiguration bc)
         {
             InitializeComponent();
             rate.Text = bc.Rate.ToString();
             pRead.Text = bc.PointsRead.ToString();
             lowChan.Text = bc.LowChannel.ToString();
             qChan.Text = bc.QChanns.ToString();
-            num.Text = String.Format("Board {0}", n);
+            num.Text = bc.BoardName;
             BoardProperties = bc;
         }
+
 
     }
 }

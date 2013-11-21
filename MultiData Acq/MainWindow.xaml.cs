@@ -24,7 +24,7 @@ namespace MultiData_Acq
     public partial class MainWindow : Window
     {
         private List<MccBoard> boards;
-        private List<ADData> adDatas;
+        private List<DataHandler> dataHandlers;
         private bool started;
         private Window configWindow;
         private ColetaInfo coletaInfo;
@@ -32,7 +32,7 @@ namespace MultiData_Acq
         {
             InitializeComponent();
             boards = new List<MccBoard>();
-            adDatas = new List<ADData>();
+            dataHandlers = new List<DataHandler>();
             started = false;
             coletaInfo = new ColetaInfo(20, "Patient");
         }
@@ -45,20 +45,17 @@ namespace MultiData_Acq
         {
             TabItem item = new TabItem();
             int numOfAdChan;
-            int lowOne;
             board.BoardConfig.GetNumAdChans(out numOfAdChan);
-            lowOne = bc.LowChannel + bc.QChanns > numOfAdChan ? 0 : bc.LowChannel;
-            numOfAdChan = bc.QChanns > numOfAdChan ? numOfAdChan : bc.QChanns;
-            item.Header = String.Format("Board {0}", num);
+            item.Header = bc.BoardName;
             Grid grid = new Grid();
             ScrollViewer scrollView = new ScrollViewer();
             scrollView.Content = grid;
             item.Content = scrollView;
-            ADData dataCont = new ADData(board, bc, num, lowOne, numOfAdChan);
-            dataCont.Finished += ColetaFinished;
-            adDatas.Add(dataCont);
-
-            for (int i = 0; i < numOfAdChan; i++)
+            bc.MaxChannels = numOfAdChan;
+            DataHandler dataHand = new DataHandler(board, bc);
+            dataHand.Finished += ColetaFinished;
+            dataHandlers.Add(dataHand);
+            for (int i = 0; i < bc.QChanns; i++)
             { 
                 ChannelControl chCont = new ChannelControl();
                 RowDefinition rowDef = new RowDefinition();
@@ -66,7 +63,7 @@ namespace MultiData_Acq
                 grid.RowDefinitions.Add(rowDef);
                 chCont.SetValue(Grid.RowProperty, i);
                 grid.Children.Add(chCont);
-                dataCont.AddPlotModel(chCont.PlotModel);
+                dataHand.AddPlotModel(chCont.PlotModel);
             }
             return item;
         }
@@ -81,13 +78,13 @@ namespace MultiData_Acq
             Button bt = (Button)sender;
             if (started)
             {
-                adDatas.ForEach(ad => ad.Stop());
+                dataHandlers.ForEach(ad => ad.Stop());
                 started = false;
                 bt.Content = "Start";
             }
             else
             {
-                adDatas.ForEach(ad => ad.Start(coletaInfo));
+                dataHandlers.ForEach(ad => ad.Start(coletaInfo));
                 started = true;
                 bt.Content = "Stop";
             }
@@ -95,7 +92,7 @@ namespace MultiData_Acq
 
         private void ColetaFinished(object sender, EventArgs e)
         {
-            ADData dataCont = (ADData)sender;
+            DataHandler dataCont = (DataHandler)sender;
             dataCont.Stop();
             started = false;
             controlBt.Content = "Start";
@@ -150,7 +147,7 @@ namespace MultiData_Acq
             List<BoardConfig> configs = new List<BoardConfig>();
             for (int i = 0; i < boards.Count; i++)
             {
-                BoardConfig bc = new BoardConfig(new BoardConfiguration(0, 4, 2000, 80), i);
+                BoardConfig bc = new BoardConfig(new BoardConfiguration(0, 4, 2000, 80));
                 bc.SetValue(Grid.RowProperty, i);
                 RowDefinition rowDef = new RowDefinition();
                 rowDef.Height = new GridLength(1, GridUnitType.Auto);

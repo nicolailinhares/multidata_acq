@@ -62,7 +62,7 @@ namespace MultiData_Acq.ViewModels
             {
                 StrokeThickness = 2,
                 MarkerSize = 3,
-                CanTrackerInterpolatePoints = false,
+                CanTrackerInterpolatePoints = true,
                 Title = "Data",
                 Smooth = false
             };

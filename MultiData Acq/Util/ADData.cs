@@ -10,22 +10,13 @@ using OxyPlot;
 using OxyPlot.Series;
 namespace MultiData_Acq.Util
 {
-    public delegate void FinishedEventHandler(object sender, EventArgs e);
+    public delegate void ScannedEventHandler(object sender, DataEventArgs e);
     public class ADData
     {
-        private const int MAX = 10000;
         private int lowChannel;
-        private int maxParts;
-        private int pontos;
-        private string boardName;
-        private List<string> lines;
-        private int boardNum;
-        private int parts;
-        private List<ushort> dados;
         private Object thisLock = new Object();
         private int qChans;
         private int rate;
-        private List<int> count;
         private ErrorInfo ULStat;
         private MccBoard Board;
         private int numPoints;
@@ -36,125 +27,54 @@ namespace MultiData_Acq.Util
         }
         private ushort[] adData;
         private IntPtr MemHandle;
-        private List<PlotModel> models;
         private CallbackFunction mCb;
-        public ADData(MccBoard board, BoardConfiguration bc, int bN, int lC, int qCh)
+        public ADData(MccBoard board, BoardConfiguration bc)
         {
-            lowChannel = lC;
-            qChans = qCh;
+            lowChannel = bc.LowChannel;
+            qChans = bc.QChanns;
             NumPoints = bc.PointsRead;
-            MemHandle = MccDaq.MccService.WinBufAllocEx(qChans*NumPoints);
+            MemHandle = MccDaq.MccService.WinBufAllocEx(10*qChans*NumPoints);
             Board = board;
             rate = bc.Rate;
             adData = new ushort[qChans*NumPoints];
-            dados = new List<ushort>();
-            models = new List<PlotModel>();
-            count = new List<int>();
             mCb = new CallbackFunction(this.CreateBackground);
-            lines = new List<string>();
-            parts = 0;
-            pontos = 0;
-            boardNum = bN;
-            boardName = String.Format("Board {0}", boardNum);
         }
 
-        public event FinishedEventHandler Finished;
-
-        protected virtual void OnFinished(EventArgs e)
+        public void Start()
         {
-            if (Finished != null)
-                Finished(this, e);
-        }
-
-        public void Start(ColetaInfo coletaInfo)
-        {
-            maxParts = coletaInfo.Duration > 0 ? (coletaInfo.Duration * rate) : 0;
-            string[] headerLines = { boardName, String.Format("Sampling rate: {0}", rate), String.Format("Channels: {0}", qChans), String.Format("Date and Time: {0}", DateTime.Now.ToString("d/MM/yyyy HH:mm:ss")), String.Format("Patient: {0}", coletaInfo.PatientName), "Dados" };
-            System.IO.File.WriteAllLines(boardName+".txt", headerLines);
             ULStat = Board.EnableEvent(EventType.OnEndOfAiScan, EventParameter.Default, mCb, MemHandle);
-            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
-            //consumer.Start();
-        }
-
-        public void AddPlotModel(PlotModel model)
-        {
-            models.Add(model);
-            count.Add(0);
+            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans*NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
         }
 
         public void Stop()
         {
             ULStat = Board.DisableEvent(EventType.OnEndOfAiScan);
-            //consumer.Stop();
-            System.IO.File.AppendAllLines(boardName + ".txt", lines);
+            //System.IO.File.AppendAllLines(boardName + ".txt", lines);
         }
 
-        /*public void PushData(object sender, EventArgs e)
-        {
-            lock (thisLock)
-            {
-                int aux;
-                float engUnits;
-                string line = "";
+        public event ScannedEventHandler Scanned;
 
-                if (dados.Count >= NumPoints * qChans)
-                {
-                    ushort[] currDados = dados.ToArray();
-                    dados.Clear();
-                    
-                }
-                else
-                {
-                    Console.WriteLine(dados.Count.ToString());
-                }
-            }
-        }*/
+        protected virtual void OnScanned(DataEventArgs e)
+        {
+            if (Scanned != null)
+                Scanned(this, e);
+        }
 
         public void SplitData(object sender, EventArgs e)
         {
             lock (thisLock)
             {
-                int aux;
-                float engUnits;
-                string line = "";
+                short status;
+                int curCount, curIndex;
+                ULStat = Board.GetStatus(out status, out curCount, out curIndex, FunctionType.AiFunction);
                 ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
                 ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans*NumPoints);
-                pontos += NumPoints;
-                for (int i = 0; i < adData.Length; i++)
-                {
-                    Board.ToEngUnits(Range.Bip10Volts, adData[i], out engUnits);
-                    var lineSeries = models[i % (qChans)].Series[0] as LineSeries;
-                    if (lineSeries != null)
-                    {
-                        line += String.Format("{0} ", adData[i]);
-                        if ((i + 1) % qChans == 0)
-                        {
-                            lines.Add(line);
-                            line = "";
-                        }
-                        if (count[i % (qChans)] >= MAX)
-                        {
-                            lineSeries.Points.Clear();
-                            count[i % (qChans)] = 0;
-                        }
-                        aux = count[i % (qChans)]++;
-                        if (aux % 10 == 0)
-                            lineSeries.Points.Add(new DataPoint(aux, engUnits));
-                    }
-                }
-                if (parts == 20)
-                {
-                    System.IO.File.AppendAllLines(String.Format(boardName + ".txt", boardNum), lines);
-                    lines.Clear();
-                    parts = 0;
-                }
-                parts++;
-                foreach (PlotModel model in models)
-                { model.RefreshPlot(true); }
-                if (maxParts > 0 && pontos >= maxParts)
-                    OnFinished(EventArgs.Empty);
                 ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);    
             }
+            DataEventArgs args = new DataEventArgs();
+            args.Data = adData;
+            args.Board = Board;
+            OnScanned(args);
             DispatcherTimer d = (DispatcherTimer)sender;
             d.Stop();
         }
