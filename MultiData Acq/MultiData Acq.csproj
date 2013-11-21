@@ -78,9 +78,14 @@
     <Compile Include="ColetaWindow.xaml.cs">
       <DependentUpon>ColetaWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Util\AbstractHandler.cs" />
     <Compile Include="Util\ADData.cs" />
     <Compile Include="Util\ColetaInfo.cs" />
     <Compile Include="Util\BoardConfiguration.cs" />
+    <Compile Include="Util\DataEventArgs.cs" />
+    <Compile Include="Util\DataHandler.cs" />
+    <Compile Include="Util\FileHandler.cs" />
+    <Compile Include="Util\PlotHandler.cs" />
     <Compile Include="ViewModels\ChannelModel.cs" />
     <Page Include="BoardConfig.xaml">
       <SubType>Designer</SubType>
