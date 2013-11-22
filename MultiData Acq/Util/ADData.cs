@@ -33,7 +33,7 @@ namespace MultiData_Acq.Util
         {
             lowChannel = bc.LowChannel;
             qChans = bc.QChanns;
-            NumPoints = bc.PointsRead;
+            NumPoints = 186;//bc.PointsRead;
             MemHandle = MccDaq.MccService.WinBufAllocEx(10*qChans*NumPoints);
             Board = board;
             rate = bc.Rate;
@@ -43,13 +43,13 @@ namespace MultiData_Acq.Util
 
         public void Start()
         {
-            ULStat = Board.EnableEvent(EventType.OnEndOfAiScan, EventParameter.Default, mCb, MemHandle);
-            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans*NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
+            ULStat = Board.EnableEvent(EventType.OnDataAvailable, qChans*NumPoints, mCb, MemHandle);
+            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans*NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background | ScanOptions.Continuous);
         }
 
         public void Stop()
         {
-            ULStat = Board.DisableEvent(EventType.OnEndOfAiScan);
+            ULStat = Board.DisableEvent(EventType.OnDataAvailable);
             //System.IO.File.AppendAllLines(boardName + ".txt", lines);
         }
 
@@ -65,7 +65,6 @@ namespace MultiData_Acq.Util
         {
             lock (thisLock)
             {
-                ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans*NumPoints);
                 DataEventArgs args = new DataEventArgs();
                 args.Data = adData;
                 args.Board = Board;
@@ -76,8 +75,9 @@ namespace MultiData_Acq.Util
 
         public void CreateBackground(int BoardNum, EventType EventType, int EventData, IntPtr pUserData)
         {
-            ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
-            ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);    
+            //ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
+            //ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
+            ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans * NumPoints);
             BackgroundWorker task = new BackgroundWorker();
             task.DoWork += SplitData;
             task.RunWorkerAsync();

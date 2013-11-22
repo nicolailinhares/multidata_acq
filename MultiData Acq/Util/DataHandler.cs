@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace MultiData_Acq.Util
 {
@@ -20,19 +21,20 @@ namespace MultiData_Acq.Util
         private FileHandler fileHand;
         private PlotHandler plotHand;
         private List<PlotModel> models;
-        public DataHandler(MccBoard board, BoardConfiguration bc)
+        private Dispatcher uiDispatcher;
+        public DataHandler(MccBoard board, BoardConfiguration bc, Dispatcher ui)
         {
             dataCont = new ADData(board, bc);
             boardConfig = bc;
             models = new List<PlotModel>();
+            uiDispatcher = ui;
         }
 
         public void Start(ColetaInfo ci)
         {
             maxPontos = ci.Duration * boardConfig.Rate * boardConfig.QChanns;
             fileHand = new FileHandler(boardConfig.QChanns, boardConfig.BoardName, boardConfig.Rate, ci.PatientName);
-            plotHand = new PlotHandler(models);
-            fileHand.Finished += EndEnsure;
+            plotHand = new PlotHandler(models, uiDispatcher);
             Processing += fileHand.CreateBackground;
             Processing += plotHand.CreateBackground;
             dataCont.Scanned += DispatchData;
@@ -59,17 +61,22 @@ namespace MultiData_Acq.Util
 
         private void DispatchData(object sender, DataEventArgs e)
         {
-            Processing.Invoke(e);
-            pontos += e.Data.Length;
+            if (maxPontos > 0 && pontos >= maxPontos)
+            {
+                Stop();
+                uiDispatcher.Invoke(() =>
+                {
+                    OnFinished(EventArgs.Empty);
+                });
+            }
+            else
+            {
+                Processing.Invoke(e);
+                pontos += e.Data.Length;
+            }
+            
             
         }
-
-        public void EndEnsure(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (maxPontos > 0 && pontos >= maxPontos)
-                OnFinished(EventArgs.Empty);
-        }
-
         public void AddPlotModel(PlotModel pm)
         {
             models.Add(pm);

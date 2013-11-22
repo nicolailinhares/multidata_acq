@@ -7,26 +7,27 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace MultiData_Acq.Util
 {
     class PlotHandler : AbstractHandler
     {
         private List<PlotModel> models;
+        private Dispatcher uiDispatcher;
         private int count;
         private int qChans;
         private const int MAX = 10000;
-        public PlotHandler(List<PlotModel> ms){
+        public PlotHandler(List<PlotModel> ms, Dispatcher ui){
             models = ms;
             qChans = models.Count;
             FileLock = new object();
+            uiDispatcher = ui;
         }
         public override void Handling(ushort[] data, MccBoard Board)
         {
-            lock (FileLock)
-            {
-                if (reading)
-                    Monitor.Wait(FileLock);
+            uiDispatcher.Invoke(() =>
+			{
                 float engUnits;
                 reading = true;
                 for (int i = 0; i < data.Length; i += qChans)
@@ -47,12 +48,12 @@ namespace MultiData_Acq.Util
                     var lineSeries = model.Series[0] as LineSeries;
                     if (lineSeries != null && count >= MAX)
                         lineSeries.Points.Clear();
-                    model.RefreshPlot(true);
+                    model.InvalidatePlot(true);
                 }
                 if (count >= MAX) count = 0;
-                reading = false;
-                Monitor.Pulse(FileLock);
-            }
+
+			});
+                
         }
 
     }

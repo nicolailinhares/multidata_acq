@@ -16,6 +16,7 @@ using MccDaq;
 using MultiData_Acq.Util;
 using System.Threading;
 using System.ComponentModel;
+using System.Windows.Threading;
 
 namespace MultiData_Acq
 {
@@ -53,7 +54,7 @@ namespace MultiData_Acq
             scrollView.Content = grid;
             item.Content = scrollView;
             bc.MaxChannels = numOfAdChan;
-            DataHandler dataHand = new DataHandler(board, bc);
+            DataHandler dataHand = new DataHandler(board, bc, Dispatcher.CurrentDispatcher);
             dataHand.Finished += ColetaFinished;
             dataHandlers.Add(dataHand);
             for (int i = 0; i < bc.QChanns; i++)
@@ -93,10 +94,8 @@ namespace MultiData_Acq
 
         private void ColetaFinished(object sender, EventArgs e)
         {
-            DataHandler dataCont = (DataHandler)sender;
-            dataCont.Stop();
             started = false;
-            //controlBt.Content = "Start";
+            controlBt.Content = "Start";
         }
 
         private void MenuDetect_Click(object sender, RoutedEventArgs e)
