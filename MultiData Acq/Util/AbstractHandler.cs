@@ -13,6 +13,7 @@ namespace MultiData_Acq.Util
     abstract class AbstractHandler
     {
         public event RunWorkerCompletedEventHandler Finished;
+        
         protected object FileLock;
         protected bool reading;
         public void CreateBackground(DataEventArgs e)

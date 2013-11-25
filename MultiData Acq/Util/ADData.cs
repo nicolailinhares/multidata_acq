@@ -50,6 +50,7 @@ namespace MultiData_Acq.Util
         public void Stop()
         {
             ULStat = Board.DisableEvent(EventType.OnDataAvailable);
+            ULStat = Board.StopBackground(FunctionType.AiFunction);
             //System.IO.File.AppendAllLines(boardName + ".txt", lines);
         }
 
@@ -65,6 +66,7 @@ namespace MultiData_Acq.Util
         {
             lock (thisLock)
             {
+                ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans * NumPoints);
                 DataEventArgs args = new DataEventArgs();
                 args.Data = adData;
                 args.Board = Board;
@@ -75,9 +77,6 @@ namespace MultiData_Acq.Util
 
         public void CreateBackground(int BoardNum, EventType EventType, int EventData, IntPtr pUserData)
         {
-            //ULStat = Board.StopBackground(MccDaq.FunctionType.AiFunction);
-            //ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans * NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background);
-            ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans * NumPoints);
             BackgroundWorker task = new BackgroundWorker();
             task.DoWork += SplitData;
             task.RunWorkerAsync();

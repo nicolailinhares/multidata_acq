@@ -21,6 +21,19 @@ namespace MultiData_Acq
     public partial class ColetaWindow : Window
     {
         private bool aborted = true;
+        private List<BoardConfig> bcWindows;
+        public List<BoardConfiguration> BoardConfigs
+        {
+            get
+            {
+                List<BoardConfiguration> bcs = new List<BoardConfiguration>();
+                foreach (BoardConfig bcw in bcWindows)
+                {
+                    bcs.Add(bcw.BoardProperties);
+                }
+                return bcs;
+            }
+        }
         public bool Aborted
         {
             get { return aborted; }
@@ -37,12 +50,22 @@ namespace MultiData_Acq
             }
             set { coletaInfo = value; }
         }
-        public ColetaWindow(ColetaInfo ci)
+        public ColetaWindow(ColetaInfo ci, List<BoardConfiguration> bcs)
         {
             InitializeComponent();
             duration.Text = ci.Duration.ToString();
             pName.Text = ci.PatientName.ToString();
-
+            bcWindows = new List<BoardConfig>();
+            for (int i = 0; i < bcs.Count; i++)
+            {
+                BoardConfig bc = new BoardConfig(bcs[i]);
+                bc.SetValue(Grid.RowProperty, i);
+                RowDefinition rowDef = new RowDefinition();
+                rowDef.Height = new GridLength(100, GridUnitType.Pixel);
+                boardConfigGrid.RowDefinitions.Add(rowDef);
+                boardConfigGrid.Children.Add(bc);
+                bcWindows.Add(bc);
+            }
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)

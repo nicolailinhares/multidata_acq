@@ -2,25 +2,59 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:MultiData_Acq"
-        Title="MultiData Acq" Width="800" Height="600" Loaded="Window_Loaded" Closed="Window_Closed">
+        Title="Multiple Data Acquisition" Width="800" Height="600" Closed="Window_Closed" Icon="Resources/icone.ico">
+    <Window.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.New" CanExecute="New_CanExecute" Executed="New_Executed"/>
+        <CommandBinding Command="MediaCommands.Play" CanExecute="Play_CanExecute" Executed="Play_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Stop" CanExecute="Stop_CanExecute" Executed="Stop_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Save" CanExecute="Save_CanExecute" Executed="Save_Executed"/>
+        <CommandBinding Command="MediaCommands.Pause" CanExecute="Pause_CanExecute" Executed="Pause_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Find" CanExecute="Find_CanExecute" Executed="Find_Executed"/>
+        <CommandBinding Command="ApplicationCommands.Close" CanExecute="Close_CanExecute" Executed="Close_Executed"/>
+    </Window.CommandBindings>
     <DockPanel>
-        <Menu DockPanel.Dock="Top">
-            <MenuItem Header="_Boards">
-                <MenuItem Header="_Detect" Click="MenuDetect_Click"/>
-            </MenuItem>
-            <MenuItem Header="_Coleta">
-                <MenuItem Header="_Configure" Click="MenuConfColeta_Click"/>
-                <MenuItem Header="_Save" Click="MenuSaveColeta_Click" />
-            </MenuItem>
-        </Menu>
+        <ToolBarTray DockPanel.Dock="Top">
+            <ToolBar>
+                <Button Command="ApplicationCommands.Find" ToolTip="Detect the connected boards.">
+                    <Image Height="32" Width="32" Source="Resources/boards.png" />
+                </Button>
+                <Button Command="ApplicationCommands.New" ToolTip="Creates new coleta.">
+                    <Image Height="32" Width="32" Source="Resources/new.png" />
+                </Button>
+                <Button Command="ApplicationCommands.Save" ToolTip="Saves the trial.">
+                    <Image Height="32" Width="32" Source="Resources/save.png" />
+                </Button>
+                <Button Command="ApplicationCommands.Close" ToolTip="Exits the program.">
+                    <Image Height="32" Width="32" Source="Resources/exit.png" />
+                </Button>
+            </ToolBar>
+            <ToolBar>
+                <Button Command="MediaCommands.Play" ToolTip="Starts the trial.">
+                    <Image Height="32" Width="32" Source="Resources/play.png" />
+                </Button>
+                <Button Command="MediaCommands.Pause" ToolTip="Pauses the coleta.">
+                    <Image Height="32" Width="32" Source="Resources/pause.png" />
+                </Button>
+                <Button Command="ApplicationCommands.Stop" ToolTip="Stops the coleta, it cannot be resumed.">
+                    <Image Height="32" Width="32" Source="Resources/stop.png" />
+                </Button>
+            </ToolBar>
+            
+        </ToolBarTray>
+        <StatusBar Name="stsBar" DockPanel.Dock="Top">
+            <StatusBarItem Name="stsMsg" Content="Click the first icon to try to detect some board" FontSize="16">
+                
+            </StatusBarItem>
+            <StatusBarItem>
+                <Image Name="loader" Source="Resources/animation.png" Visibility="Hidden"  Height="16" Width="16"/>
+            </StatusBarItem>
+        </StatusBar>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="50"/>
             </Grid.RowDefinitions>
             <TabControl Name="tabControl" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="10" Grid.Row="0"/>
-            <Button Content="Start" Name="controlBt" HorizontalAlignment="Right" Margin="10" VerticalAlignment="Top" Width="75" Click="Button_Click" Grid.Row="1"/>
-
         </Grid>
+        
     </DockPanel>
 </Window>

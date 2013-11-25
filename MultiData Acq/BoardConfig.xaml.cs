@@ -25,22 +25,42 @@ namespace MultiData_Acq
         {
             get
             {
-                boardProperties = new BoardConfiguration(Int32.Parse(lowChan.Text), Int32.Parse(qChan.Text), Int32.Parse(rate.Text), Int32.Parse(pRead.Text)); 
-                return boardProperties; }
+                boardProperties.LowChannel = (int) chnSlider.RangeStartSelected - 1;
+                boardProperties.QChanns = (int) (chnSlider.RangeStopSelected - chnSlider.RangeStartSelected + 1);
+                boardProperties.Rate = Int32.Parse(rate.Text);
+                return boardProperties;
+            }
             set { boardProperties = value; }
+
         }
-        
+
         public BoardConfig(BoardConfiguration bc)
         {
             InitializeComponent();
+            chnSlider.RangeStart = 1;
+            chnSlider.RangeStop = bc.MaxChannels;
             rate.Text = bc.Rate.ToString();
-            pRead.Text = bc.PointsRead.ToString();
-            lowChan.Text = bc.LowChannel.ToString();
-            qChan.Text = bc.QChanns.ToString();
+            chnSlider.RangeStartSelected = bc.LowChannel + 1;
+            chnSlider.RangeStopSelected = bc.LowChannel + bc.QChanns; 
             num.Text = bc.BoardName;
             BoardProperties = bc;
+            lc.Content = chnSlider.RangeStartSelected.ToString();
+            hc.Content = chnSlider.RangeStopSelected.ToString();
         }
 
+        private void RangeSlider_RangeSelectionChanged(object sender, AC.AvalonControlsLibrary.Controls.RangeSelectionChangedEventArgs e)
+        {
+            if (e.NewRangeStart > e.NewRangeStop)
+            {
+                chnSlider.RangeStartSelected = e.NewRangeStop;
+                chnSlider.RangeStopSelected = e.NewRangeStart;
+            }
 
+            if (lc != null)
+            {
+                lc.Content = chnSlider.RangeStartSelected.ToString();
+                hc.Content = chnSlider.RangeStopSelected.ToString();
+            }
+        }
     }
 }

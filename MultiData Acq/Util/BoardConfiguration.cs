@@ -8,7 +8,6 @@ namespace MultiData_Acq.Util
         public int Rate {get; set;}
         public int QChanns{get; set;}
         public int LowChannel  {get; set;}
-        public int PointsRead {get; set;}
         private int maxChannels;
         public int MaxChannels
         {
@@ -20,11 +19,10 @@ namespace MultiData_Acq.Util
                 maxChannels = value;
             }
         }
-        public BoardConfiguration(int lC, int qC, int r, int pR)
+        public BoardConfiguration(int lC, int qC, int r)
         {
             Rate = r;
             LowChannel = lC;
-            PointsRead = pR;
             QChanns = qC;
         }
 
