@@ -14,7 +14,7 @@ namespace MultiData_Acq.Util
         private List<string> lines;
         private string boardName;
         private List<string> chnNames;
-        //private int parts;
+        private int parts;
         public string PatientName { get; set; }
         public int Rate { get; set; }
         
@@ -26,7 +26,7 @@ namespace MultiData_Acq.Util
             PatientName = patientName;
             qChans = qC;
             lines = new List<string>();
-            //parts = 0;
+            parts = 0;
             FileLock = new object();
             reading = false;
             string names = "";
@@ -52,13 +52,13 @@ namespace MultiData_Acq.Util
                         line = "";
                     }
                 }
-                //if (parts > 20)
-               // {
-                System.IO.File.AppendAllLines(boardName + ".txt", lines);
-                lines.Clear();
-                   // parts = 0;
-                //}
-                //parts++;
+                if (parts > 10)
+                {
+                    System.IO.File.AppendAllLines(boardName + ".txt", lines);
+                    lines.Clear();
+                    parts = 0;
+                }
+                parts++;
                 reading = false;
                 Monitor.Pulse(FileLock);
             }

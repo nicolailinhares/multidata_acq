@@ -31,7 +31,7 @@ namespace MultiData_Acq.Util
 			{
                 float engUnits;
                 reading = true;
-                for (int i = 0; i < data.Length; i += qChans)
+                for (int i = 0; i < data.Length; i += 4*qChans)
                 {
                     for (int j = 0; j < qChans; j++)
                     {
@@ -40,9 +40,9 @@ namespace MultiData_Acq.Util
                         if (lineSeries != null)
                         {
                             lineSeries.Points.Add(new DataPoint(count, engUnits));
-                        }
-                        count++;
+                        }                        
                     }
+                    count+=4;
                 }
                 foreach (PlotModel model in models)
                 {

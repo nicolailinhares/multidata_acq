@@ -201,10 +201,8 @@ namespace MultiData_Acq
 
         private void Stop_Executed(object sender, ExecutedRoutedEventArgs e)
         {
+            dataHandlers.ForEach(dh => dh.Stop());
             TrialCleaning("Trial aborted");
-            boards.ForEach(b => b.StopBackground(FunctionType.AiFunction));
-            dataHandlers.Clear();
-            
         }
 
         private void Save_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -307,6 +305,8 @@ namespace MultiData_Acq
             completed = true;
             started = false;
             stsMsg.Content = complement + ", click the third icon to save acquired data";
+            dataHandlers.Clear();
+            CommandManager.InvalidateRequerySuggested();
         }
     }
 }

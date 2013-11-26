@@ -74,9 +74,12 @@ namespace MultiData_Acq
             Close();
         }
 
-        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
         {
+            CheckBox cb = (CheckBox)sender; 
+            cb.IsEnabled = false;
             duration.IsEnabled = !duration.IsEnabled;
+            cb.IsEnabled = true;
         }
 
     }

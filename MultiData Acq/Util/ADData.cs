@@ -55,7 +55,6 @@ namespace MultiData_Acq.Util
             BoardErrorException.TestException(ULStat, this, "Disabling Event");
             ULStat = Board.StopBackground(FunctionType.AiFunction);
             BoardErrorException.TestException(ULStat, this, "Stopping background service");
-            //System.IO.File.AppendAllLines(boardName + ".txt", lines);
         }
 
         public event ScannedEventHandler Scanned;
