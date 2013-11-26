@@ -10,7 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <oxy:Plot x:Name="Plot1" Model="{Binding PlotModel}" Margin="10" Grid.Row="0">
+        <oxy:Plot x:Name="Plot1" Title="A Graph" Model="{Binding PlotModel}" Margin="10" Grid.Row="0" MouseDoubleClick="Plot1_MouseDoubleClick">
         </oxy:Plot>
 
 

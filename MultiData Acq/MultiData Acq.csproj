@@ -79,6 +79,9 @@
     <Compile Include="ChannelControl.xaml.cs">
       <DependentUpon>ChannelControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ChnNameWindow.xaml.cs">
+      <DependentUpon>ChnNameWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ColetaWindow.xaml.cs">
       <DependentUpon>ColetaWindow.xaml</DependentUpon>
     </Compile>
@@ -89,6 +92,7 @@
     </Compile>
     <Compile Include="Util\AbstractHandler.cs" />
     <Compile Include="Util\ADData.cs" />
+    <Compile Include="Util\BoardErrorException.cs" />
     <Compile Include="Util\ColetaInfo.cs" />
     <Compile Include="Util\BoardConfiguration.cs" />
     <Compile Include="Util\DataEventArgs.cs" />
@@ -105,6 +109,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ChannelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ChnNameWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

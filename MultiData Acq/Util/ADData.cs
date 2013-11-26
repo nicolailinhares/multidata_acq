@@ -44,13 +44,17 @@ namespace MultiData_Acq.Util
         public void Start()
         {
             ULStat = Board.EnableEvent(EventType.OnDataAvailable, qChans*NumPoints, mCb, MemHandle);
+            BoardErrorException.TestException(ULStat, this, "Enabling Event");
             ULStat = Board.AInScan(lowChannel, lowChannel + qChans - 1, qChans*NumPoints, ref rate, Range.Bip10Volts, MemHandle, ScanOptions.Background | ScanOptions.Continuous);
+            BoardErrorException.TestException(ULStat, this, "Initializing acquisition");
         }
 
         public void Stop()
         {
             ULStat = Board.DisableEvent(EventType.OnDataAvailable);
+            BoardErrorException.TestException(ULStat, this, "Disabling Event");
             ULStat = Board.StopBackground(FunctionType.AiFunction);
+            BoardErrorException.TestException(ULStat, this, "Stopping background service");
             //System.IO.File.AppendAllLines(boardName + ".txt", lines);
         }
 
@@ -67,6 +71,7 @@ namespace MultiData_Acq.Util
             lock (thisLock)
             {
                 ULStat = MccDaq.MccService.WinBufToArray(MemHandle, adData, 0, qChans * NumPoints);
+                BoardErrorException.TestException(ULStat, this, "Reading the buffer");
                 DataEventArgs args = new DataEventArgs();
                 args.Data = adData;
                 args.Board = Board;

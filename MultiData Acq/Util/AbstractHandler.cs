@@ -26,7 +26,6 @@ namespace MultiData_Acq.Util
             };
             task.RunWorkerAsync();
         }
-
         public abstract void Handling(ushort[] data, MccBoard board);
     }
 }

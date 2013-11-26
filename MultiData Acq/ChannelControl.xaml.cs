@@ -26,18 +26,26 @@ namespace MultiData_Acq
     /// </summary>
     public partial class ChannelControl : UserControl, INotifyPropertyChanged
     {
+        private string chnName;
         private PlotModel plotModel;
         public PlotModel PlotModel
         {
             get { return plotModel; }
             set { plotModel = value; }
         }
-        public ChannelControl()
+        public string ChnName
         {
+            get { return chnName; }
+            set { chnName = value; Notify("ChnName"); }
+        }
+        public ChannelControl(string cn)
+        {
+            
             PlotModel = new PlotModel();
             SetUpModel();
             DataContext = this;
             InitializeComponent();
+            ChnName = cn;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -63,6 +71,23 @@ namespace MultiData_Acq
                 Smooth = false
             };
             PlotModel.Series.Add(lineSerie);
+            
+        }
+
+        private void Plot1_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            ChnNameWindow chnNameWindow = new ChnNameWindow();
+            chnNameWindow.Aborted = true;
+            chnNameWindow.ChannelName = chnName;
+            //chnNameWindow.Owner = (Window) this.Parent;
+            chnNameWindow.ShowDialog();
+            if (!chnNameWindow.Aborted)
+                ChnName = chnNameWindow.ChannelName;
+        }
+
+        public void DisableClick()
+        {
+            Plot1.MouseDoubleClick -= Plot1_MouseDoubleClick;
         }
     }
 }

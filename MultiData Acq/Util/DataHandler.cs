@@ -20,20 +20,25 @@ namespace MultiData_Acq.Util
         private BoardConfiguration boardConfig;
         private FileHandler fileHand;
         private PlotHandler plotHand;
-        private List<PlotModel> models;
+        private List<ChannelControl> models;
         private Dispatcher uiDispatcher;
         public DataHandler(MccBoard board, BoardConfiguration bc, Dispatcher ui)
         {
             dataCont = new ADData(board, bc);
             boardConfig = bc;
-            models = new List<PlotModel>();
+            models = new List<ChannelControl>();
             uiDispatcher = ui;
         }
 
         public void Start(ColetaInfo ci)
         {
+            List<string> names = new List<string>();
+            models.ForEach(delegate(ChannelControl cc){
+                names.Add(cc.ChnName);
+                cc.DisableClick();
+            });
             maxPontos = ci.Duration * boardConfig.Rate * boardConfig.QChanns;
-            fileHand = new FileHandler(boardConfig.QChanns, boardConfig.BoardName, boardConfig.Rate, ci.PatientName);
+            fileHand = new FileHandler(boardConfig.QChanns, boardConfig.BoardName, boardConfig.Rate, ci.PatientName, names);
             plotHand = new PlotHandler(models, uiDispatcher);
             Processing += fileHand.CreateBackground;
             Processing += plotHand.CreateBackground;
@@ -73,11 +78,9 @@ namespace MultiData_Acq.Util
             {
                 Processing.Invoke(e);
                 pontos += e.Data.Length;
-            }
-            
-            
+            }         
         }
-        public void AddPlotModel(PlotModel pm)
+        public void AddPlotModel(ChannelControl pm)
         {
             models.Add(pm);
         }

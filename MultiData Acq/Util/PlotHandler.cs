@@ -18,8 +18,9 @@ namespace MultiData_Acq.Util
         private int count;
         private int qChans;
         private const int MAX = 10000;
-        public PlotHandler(List<PlotModel> ms, Dispatcher ui){
-            models = ms;
+        public PlotHandler(List<ChannelControl> ms, Dispatcher ui){
+            models = new List<PlotModel>();
+            ms.ForEach(m => models.Add(m.PlotModel));
             qChans = models.Count;
             FileLock = new object();
             uiDispatcher = ui;

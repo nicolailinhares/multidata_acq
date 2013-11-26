@@ -9,9 +9,7 @@ namespace MultiData_Acq.Util
 {
     public class DataEventArgs : EventArgs
     {
-        private ushort[] data;
         public ushort[] Data {get; set;}
-        private MccBoard board;
         public MccBoard Board { get; set; }
 
     }

@@ -12,9 +12,7 @@ namespace MultiData_Acq.ViewModels
     public class ChannelModel: INotifyPropertyChanged
     {
         private const int MAX = 60;
-        private DateTime dt;
         private int chann;
-        private int count;
         public int Chann
         {
             get { return chann; }
@@ -29,9 +27,7 @@ namespace MultiData_Acq.ViewModels
         public ChannelModel(int chann, ADData data)
         {
             PlotModel = new PlotModel();
-            dt = new DateTime();
             SetUpModel();
-            count = 0;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

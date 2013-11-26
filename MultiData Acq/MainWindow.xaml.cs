@@ -67,13 +67,13 @@ namespace MultiData_Acq
             dataHandlers.Add(dataHand);
             for (int i = 0; i < bc.QChanns; i++)
             { 
-                ChannelControl chCont = new ChannelControl();
+                ChannelControl chCont = new ChannelControl("Channel "+(bc.LowChannel + i + 1).ToString());
                 RowDefinition rowDef = new RowDefinition();
                 rowDef.Height = new GridLength(250, GridUnitType.Pixel);
                 grid.RowDefinitions.Add(rowDef);
                 chCont.SetValue(Grid.RowProperty, i);
                 grid.Children.Add(chCont);
-                dataHand.AddPlotModel(chCont.PlotModel);
+                dataHand.AddPlotModel(chCont);
             }
             return item;
         }
@@ -147,7 +147,7 @@ namespace MultiData_Acq
                 }
                 tabControl.SelectedItem = tabControl.Items[0];
                 completed = false;
-                stsMsg.Content = "Trial successfuly created, click the play icon to start acquisition";
+                stsMsg.Content = "Trial successfuly created, double click chart to change description, click the play icon to start acquisition";
             }
             
         }
@@ -159,9 +159,17 @@ namespace MultiData_Acq
 
         private void Play_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            dataHandlers.ForEach(ad => ad.Start(coletaInfo));
-            started = true;
-            stsMsg.Content = "Acquiring...";
+            try
+            {
+                dataHandlers.ForEach(ad => ad.Start(coletaInfo));
+                started = true;
+                stsMsg.Content = "Acquiring...";
+            }
+            catch (BoardErrorException err)
+            {
+                stsMsg.Content = "Board error on " + err.ErrMessage +", try to detect a board";
+            }
+            
             //animationToggle();
         }
 
@@ -172,10 +180,18 @@ namespace MultiData_Acq
 
         private void Pause_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            dataHandlers.ForEach(ad => ad.Stop());
-            started = false;
-            animationToggle();
-            stsMsg.Content = "Paused, click the play icon to resume";
+            try
+            {
+                dataHandlers.ForEach(ad => ad.Stop());
+                started = false;
+                //animationToggle();
+                stsMsg.Content = "Paused, click the play icon to resume";
+            }
+            catch (BoardErrorException err)
+            {
+                stsMsg.Content = "Board error on " + err.ErrMessage + ", try to detect a board";
+            }
+            
         }
         
         private void Stop_CanExecute(object sender, CanExecuteRoutedEventArgs e)
